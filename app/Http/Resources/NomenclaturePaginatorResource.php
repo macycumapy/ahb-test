@@ -20,6 +20,7 @@ class NomenclaturePaginatorResource extends JsonResource
             'pages' => $this->lastPage(),
             'current_page' => $this->currentPage(),
             'links' => $this->linkCollection(),
+            'total' => $this->total(),
         ];
     }
 }

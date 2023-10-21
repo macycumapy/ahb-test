@@ -1,9 +1,10 @@
 <template>
     <div>
-        <div v-if="isEmptyResult" class="container">
+        <div v-if="total === 0" class="container">
             Записей не обнаружено. <router-link to="/upload">Загрузите</router-link> данные.
         </div>
         <div v-else class="row justify-content-center">
+            <div>Всего записей: {{ this.total }}</div>
             <div class="col-md-12">
                 <div class="card position-relative">
                     <div v-if="showPreloader" class="preloader">
@@ -104,7 +105,7 @@
                         </tbody>
                     </table>
                 </div>
-                <nav aria-label="Page navigation example">
+                <nav>
                     <ul class="pagination justify-content-center">
                         <li v-for="link in links">
                             <a class="page-link cursor-pointer" :class="{'bg-secondary text-light': this.page == link.label}" v-html="link.label" @click.prevent="getList(link.url)"></a>
@@ -127,11 +128,7 @@ export default {
             showPreloader: false,
             links: [],
             page: 1,
-        }
-    },
-    computed: {
-        isEmptyResult() {
-            return this.nomenclatures.length === 0;
+            total: 0,
         }
     },
     mounted() {
@@ -145,6 +142,7 @@ export default {
                     this.links = response.data.links
                     this.nomenclatures = response.data.data
                     this.page = response.data.current_page
+                    this.total = response.data.total
                 })
                 .finally(() => {
                     this.showPreloader = false;
