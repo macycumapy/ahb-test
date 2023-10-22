@@ -11,7 +11,7 @@ class UploadNomenclatureRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'file' => ['required', 'file', 'mimes:xlsx,csv', 'max:10000']
+            'file' => ['required', 'file', 'mimes:xlsx', 'max:10000']
         ];
     }
 }
