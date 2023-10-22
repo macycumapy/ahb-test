@@ -2,21 +2,18 @@
 
 declare(strict_types=1);
 
-namespace App\Services\NomenclatureUploaderService;
+namespace App\Services\NomenclatureUploaderService\Parsers;
 
 use App\Services\NomenclatureUploaderService\Data\NomenclatureData;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 use SimpleXLSX;
 
-class NomenclatureXlsxParser
+class NomenclatureXlsxParser extends AbstractNomenclatureParser
 {
-    private const SEP = '%sep%';
-    private array $errors = [];
-
-    public function parse(string $data): Collection
+    public function parse(string $filepath): Collection
     {
-        $xlsx = SimpleXLSX::parseData($data);
+        $xlsx = SimpleXLSX::parseFile($filepath);
 
         $data = collect($xlsx->rows())
             ->skip(1)
@@ -43,7 +40,7 @@ class NomenclatureXlsxParser
                         'measurement' => str_replace('"', '', $rowData[10]),
                         'image' => $this->trimString($rowData[11]),
                         'showMain' => $rowData[12],
-                        'description' => $this->trimString($rowData[13]),
+                        'description' => $this->trimString(strip_tags($rowData[13])),
                     ]);
                 } catch (ValidationException $e) {
                     $rowNum = $key + 1;
@@ -58,15 +55,5 @@ class NomenclatureXlsxParser
         }
 
         return $data;
-    }
-
-    private function trimString(?string $str): ?string
-    {
-        return trim(str_replace(self::SEP, ' ', $str)) ?: null;
-    }
-
-    private function stringToFloat(?string $str): float
-    {
-        return (float) str_replace(self::SEP, '.', $str);
     }
 }

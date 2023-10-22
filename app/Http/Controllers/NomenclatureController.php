@@ -7,7 +7,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UploadNomenclatureRequest;
 use App\Http\Resources\NomenclaturePaginatorResource;
 use App\Models\Nomenclature;
-use App\Services\NomenclatureUploaderService\NomenclatureXlsxUploader;
+use App\Services\NomenclatureUploaderService\NomenclatureUploader;
+use Exception;
 use Illuminate\Http\Request;
 
 class NomenclatureController extends Controller
@@ -19,9 +20,12 @@ class NomenclatureController extends Controller
         return response()->json(NomenclaturePaginatorResource::make($data));
     }
 
-    public function upload(UploadNomenclatureRequest $request, NomenclatureXlsxUploader $nomenclatureXlsxUploader)
+    /**
+     * @throws Exception
+     */
+    public function upload(UploadNomenclatureRequest $request, NomenclatureUploader $nomenclatureXlsxUploader)
     {
-        $result = $nomenclatureXlsxUploader->upload($request->file->getContent());
+        $result = $nomenclatureXlsxUploader->upload($request->file);
 
         return $result
             ? response()->json(['message' => 'Номенклатура загружена'])

@@ -5,7 +5,7 @@
         </div>
         <div class="container">
             <div>
-                <input type="file" @change="uploadFile" ref="file" required accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                <input type="file" @change="uploadFile" ref="file" required accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
                 <button @click="submitFile">Загрузить</button>
             </div>
             <div v-if="this.message" class="mt-4">

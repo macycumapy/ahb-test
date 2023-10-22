@@ -8,18 +8,27 @@ use App\Models\Measurement;
 use App\Models\Nomenclature;
 use App\Models\NomenclatureType;
 use App\Services\NomenclatureUploaderService\Data\NomenclatureData;
+use App\Services\NomenclatureUploaderService\Parsers\NomenclatureParserFactory;
+use Exception;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
-class NomenclatureXlsxUploader
+class NomenclatureUploader
 {
-    public function __construct(private readonly NomenclatureXlsxParser $parser)
+    public function __construct(private readonly NomenclatureParserFactory $parserFactory)
     {
     }
 
-    public function upload(string $data): bool
+    /**
+     * @throws Exception
+     */
+    public function upload(UploadedFile $uploadedFile): bool
     {
-        $parsedDataCollection = $this->parser->parse($data);
+        $filepath = $this->saveTmpFile($uploadedFile);
+
+        $parser = $this->parserFactory->getParser($filepath);
+        $parsedDataCollection = $parser->parse($filepath);
 
         DB::beginTransaction();
         try {
@@ -37,6 +46,15 @@ class NomenclatureXlsxUploader
         }
 
         return false;
+    }
+
+    private function saveTmpFile(UploadedFile $uploadedFile): string|bool
+    {
+        return storage_path(
+            'app/' . $uploadedFile->storeAs('tmp', $uploadedFile->getClientOriginalName(), [
+                'disk' => 'local',
+            ])
+        );
     }
 
     private function firstOrCreateMeasurement(string $measurementName): Measurement
