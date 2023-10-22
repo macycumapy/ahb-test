@@ -11,6 +11,7 @@ use SimpleXLSX;
 
 class NomenclatureXlsxParser
 {
+    private const SEP = '%sep%';
     private array $errors = [];
 
     public function parse(string $data): Collection
@@ -20,7 +21,7 @@ class NomenclatureXlsxParser
         $data = collect($xlsx->rows())
             ->skip(1)
             ->map(function ($row, $key) {
-                $rowData = explode(';', implode(' ', $row));
+                $rowData = explode(';', implode(self::SEP, $row));
                 try {
                     if (count($rowData) < 14) {
                         throw ValidationException::withMessages([
@@ -29,20 +30,20 @@ class NomenclatureXlsxParser
                     }
 
                     return NomenclatureData::validateAndCreate([
-                        'code' => trim($rowData[0]),
-                        'name' => $rowData[1],
-                        'level1' => trim($rowData[2]) ?: null,
-                        'level2' => trim($rowData[3]) ?: null,
-                        'level3' => trim($rowData[4]) ?: null,
-                        'price' => (float)$rowData[5],
-                        'priceSP' => (float)$rowData[6],
-                        'quantity' => (float)$rowData[7],
-                        'properties' => $rowData[8] ?: null,
+                        'code' => $this->trimString($rowData[0]),
+                        'name' => $this->trimString($rowData[1]),
+                        'level1' => $this->trimString($rowData[2]),
+                        'level2' => $this->trimString($rowData[3]),
+                        'level3' => $this->trimString($rowData[4]),
+                        'price' => $this->stringToFloat($rowData[5]),
+                        'priceSP' => $this->stringToFloat($rowData[6]),
+                        'quantity' => $this->stringToFloat($rowData[7]),
+                        'properties' => $this->trimString($rowData[8]),
                         'jointPurchases' => (bool)$rowData[9],
                         'measurement' => str_replace('"', '', $rowData[10]),
-                        'image' => trim($rowData[11]) ?: null,
+                        'image' => $this->trimString($rowData[11]),
                         'showMain' => $rowData[12],
-                        'description' => trim($rowData[13]) ?: null,
+                        'description' => $this->trimString($rowData[13]),
                     ]);
                 } catch (ValidationException $e) {
                     $rowNum = $key + 1;
@@ -57,5 +58,15 @@ class NomenclatureXlsxParser
         }
 
         return $data;
+    }
+
+    private function trimString(?string $str): ?string
+    {
+        return trim(str_replace(self::SEP, ' ', $str)) ?: null;
+    }
+
+    private function stringToFloat(?string $str): float
+    {
+        return (float) str_replace(self::SEP, '.', $str);
     }
 }
